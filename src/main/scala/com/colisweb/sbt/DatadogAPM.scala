@@ -64,7 +64,7 @@ object DatadogAPM extends AutoPlugin {
     bashScriptExtraDefines += {
       val globalTags = datadogGlobalTags.value
       if (globalTags.contains("env") && globalTags.contains("version")) {
-        val tags = globalTags { case (key, value) => s"$key:$value" }.mkString(",")
+        val tags = globalTags.map { case (key, value) => s"$key:$value" }.mkString(",")
         s"""addJava -Ddd.trace.global.tags=$tags"""
       } else {
         """echo "Datadog env and/or version are not set""""
