@@ -90,6 +90,22 @@ You can use your **host** (where you code run) environment variables in the valu
 datadogAgentPort := "${MY_DD_PORT}"
 ```
 
+#### `datadogEnv`
+
+By default, the `env` is not set.
+
+To set the `env`, add the following to your `build.sbt` file:
+
+```scala
+datadogEnv := "staging"
+```
+
+You can use your **host** (where you code run) environment variables in the value:  
+
+```scala
+datadogEnv := "${MY_ENV}"
+```
+
 #### `datadogEnableNetty`
 
 Netty Http Server and Client Instrumentation. Default value is `false`.
@@ -127,8 +143,9 @@ A list of default tags to be added to every span and every JMX metric. Default v
 To add global tags:
 
 ```scala
-datadogGlobalTags := Map("env" -> "testing", "version" -> "testing-4c84587e")
+datadogGlobalTags += ("key", "value")
 ```
+
 
 #### Other possible settings
 
