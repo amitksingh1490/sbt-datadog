@@ -48,6 +48,7 @@ object DatadogAPM extends AutoPlugin {
     datadogEnableNetty := false,
     datadogEnableAkkaHttp := false,
     datadogEnableDebug := false,
+    datadogGlobalTags := Map.empty,
     libraryDependencies += "com.datadoghq"          % "dd-java-agent" % datadogApmVersion.value % DatadogConfig,
     mappings in Universal += datadogJavaAgent.value -> "datadog/dd-java-agent.jar",
     bashScriptExtraDefines += """addJava "-javaagent:${app_home}/../datadog/dd-java-agent.jar"""",
@@ -63,11 +64,13 @@ object DatadogAPM extends AutoPlugin {
     },
     bashScriptExtraDefines += {
       val globalTags = datadogGlobalTags.value
-      if (globalTags.contains("env") && globalTags.contains("version")) {
-        val tags = globalTags.map { case (key, value) => s"$key:$value" }.mkString(",")
-        s"""addJava -Ddd.trace.global.tags=$tags"""
-      } else {
-        """echo "Datadog env and/or version are not set""""
+      (globalTags.contains("env"), globalTags.contains("version")) match {
+        case (false, false) => """echo "Datadog env and app version are not set""""
+        case (false, true)  => """echo "Datadog env is not set""""
+        case (true, false)  => """echo "App version is not set""""
+        case (true, true) =>
+          val tags = globalTags.map { case (key, value) => s"$key:$value" }.mkString(",")
+          s"""addJava -Ddd.trace.global.tags=$tags"""
       }
     }
   )
