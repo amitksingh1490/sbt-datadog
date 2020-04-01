@@ -23,15 +23,12 @@ object DatadogAPM extends AutoPlugin {
     )
     lazy val datadogAgentPort =
       taskKey[String]("Port number the Agent is listening on for configured host. Default value: 8126")
-    lazy val datadogEnv = taskKey[String](
-      "Environment. https://docs.datadoghq.com/tracing/setup/first_class_dimensions/. By default, this settings is not set"
-    )
     lazy val datadogEnableNetty = taskKey[Boolean]("Netty Http Server and Client Instrumentation. Default value: false")
     lazy val datadogEnableAkkaHttp =
       taskKey[Boolean]("Akka-Http Server and Lagom Framework Instrumentation. Default value: false")
     lazy val datadogEnableDebug =
       taskKey[Boolean]("To return debug level application logs, enable debug mode. Default value: false")
-    lazy val datadogGlobalTags = taskKey[Seq[(String, String)]](
+    lazy val datadogGlobalTags = taskKey[Map[String, String]](
       "A list of default tags to be added to every span and every JMX metric. Default value: Empty List"
     )
   }
@@ -48,11 +45,9 @@ object DatadogAPM extends AutoPlugin {
     datadogServiceName := name.value,
     datadogAgentHost := "localhost",
     datadogAgentPort := "8126",
-    datadogEnv := "",
     datadogEnableNetty := false,
     datadogEnableAkkaHttp := false,
     datadogEnableDebug := false,
-    datadogGlobalTags := Nil,
     libraryDependencies += "com.datadoghq"          % "dd-java-agent" % datadogApmVersion.value % DatadogConfig,
     mappings in Universal += datadogJavaAgent.value -> "datadog/dd-java-agent.jar",
     bashScriptExtraDefines += """addJava "-javaagent:${app_home}/../datadog/dd-java-agent.jar"""",
@@ -62,17 +57,18 @@ object DatadogAPM extends AutoPlugin {
     bashScriptExtraDefines += s"""addJava "-Ddd.integration.netty.enabled=${datadogEnableNetty.value}"""",
     bashScriptExtraDefines += s"""addJava "-Ddd.integration.akka-http.enabled=${datadogEnableAkkaHttp.value}"""",
     bashScriptExtraDefines += {
-      val env = datadogEnv.value
-      if (env.nonEmpty) s"""addJava "-Ddd.trace.global.tags=env:$env"""" else """echo "Datadog env is not set""""
-    },
-    bashScriptExtraDefines += {
       val debugEnabled = datadogEnableDebug.value
       if (debugEnabled) s"""addJava "-Ddatadog.slf4j.simpleLogger.defaultLogLevel=debug""""
       else """echo "Datadog debug mode disabled""""
     },
-    bashScriptExtraDefines ++= datadogGlobalTags.value.map {
-      case (key, value) =>
-        s"""addJava -Ddd.trace.global.tags=$key:$value"""
+    bashScriptExtraDefines += {
+      val globalTags = datadogGlobalTags.value
+      if (globalTags.contains("env") && globalTags.contains("version")) {
+        val tags = globalTags { case (key, value) => s"$key:$value" }.mkString(",")
+        s"""addJava -Ddd.trace.global.tags=$tags"""
+      } else {
+        """echo "Datadog env and/or version are not set""""
+      }
     }
   )
 
