@@ -1,6 +1,16 @@
+lazy val scala212 = "2.12.11"
+lazy val scala213 = "2.13.1"
+lazy val supportedScalaVersions = List(scala213, scala212)
+
 organization := "com.colisweb.sbt"
 name := "sbt-datadog"
-scalaVersion := "2.12.10"
+scalaVersion := scala213
+crossScalaVersions := supportedScalaVersions
+
+scalafmtOnCompile := true
+scalafmtCheck := true
+scalafmtSbtCheck := true
+
 licenses := Seq("MIT" -> url("http://opensource.org/licenses/MIT"))
 homepage := Some(url("https://github.com/colisweb/sbt-datadog"))
 sbtPlugin := true

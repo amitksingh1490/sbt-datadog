@@ -49,7 +49,7 @@ object DatadogAPM extends AutoPlugin {
     datadogEnableAkkaHttp := false,
     datadogEnableDebug := false,
     datadogGlobalTags := Map.empty,
-    libraryDependencies += "com.datadoghq"          % "dd-java-agent" % datadogApmVersion.value % DatadogConfig,
+    libraryDependencies += "com.datadoghq"           % "dd-java-agent" % datadogApmVersion.value % DatadogConfig,
     mappings in Universal += datadogJavaAgent.value -> "datadog/dd-java-agent.jar",
     bashScriptExtraDefines += """addJava "-javaagent:${app_home}/../datadog/dd-java-agent.jar"""",
     bashScriptExtraDefines += s"""addJava "-Ddd.service.name=${datadogServiceName.value}"""",
